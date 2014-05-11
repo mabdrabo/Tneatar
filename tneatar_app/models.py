@@ -26,8 +26,8 @@ class User(models.Model):
     def set_keypair(self, pubkey, privkey):
         try:
             keypair = Keypair.objects.get(user=self)
-            keypair.private_key = privkey
-            keypair.public_key = pubkey
+            keypair.private_key = privkey.save_pkcs1(format='PEM')
+            keypair.public_key = pubkey.save_pkcs1(format='PEM')
             keypair.save()
             return keypair
         except Keypair.DoesNotExist:
