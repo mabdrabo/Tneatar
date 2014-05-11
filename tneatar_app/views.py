@@ -94,11 +94,11 @@ def tneat(request):
             # print "signature:", signature
             encryp_tneata = crypto + 'MMMMM' + signature
             print "1>", encryp_tneata
-            print type(encryp_tneata)
-            print "2>", encryp_tneata.decode('utf8')
-            print type(encryp_tneata)
+            encryp_tneata = encryp_tneata.encode('Base64')
+            print "2>", encryp_tneata
 
             tneat = Tneata.objects.create(user=user, content=encryp_tneata)
+
 
 
 def direct_message(request):

@@ -42,7 +42,7 @@ class Keypair(models.Model):
 class Tneata(models.Model):
     user = models.ForeignKey(User, related_name='tneata_owner')
     content = models.CharField(max_length=2048)
-    retneat_count = models.IntegerField()
+    retneat_count = models.IntegerField(default=0)
 
     def __unicode__(self):
         return "Tneata object"
