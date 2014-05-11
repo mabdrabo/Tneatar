@@ -81,9 +81,9 @@ def dashboard(request, dic={}):
 
 def tneat(request):
     '''
-        The Tneata is encrypted using the owner's Private key,
-        the followers can use the owner's Public key decrypt and verify
-        the ownership of the tneata
+        The Tneata is encrypted and digitally signed using the owner's Private key,
+        the followers can use the owner's Public key to decrypt and verify
+        the ownership of the tneata to the owner
 
         Tneatas are saved in DB in Base64,
         so it needs decoding before decryption
@@ -95,13 +95,40 @@ def tneat(request):
             signature = rsa.sign(crypto, user.get_private_key(), 'SHA-1')
             encryp_tneata = 'MMMMM'.join([crypto, signature])
             encryp_tneata = encryp_tneata.encode('Base64')
-
             tneat = Tneata.objects.create(user=user, content=encryp_tneata)
 
 
+def decrypt_tneatas():
+    '''
+    '''
+    user = logged_in_user(request)
+    if user:
+        tneatas = user.get
 
-def direct_message(request):
-    return
+
+def send_direct_message(request):
+    '''
+        The message is encrypted using the recipient's Public key,
+        the message is digitally signed using the sender's Private key,
+        the recipient must use his own Private key to decrypt,
+        and use the sender's Public key to verify ownership
+
+        Messages are saved in DB in Base64,
+        so it needs decoding before decryption
+    '''
+    user = logged_in_user(request)
+    if user:
+        if 'direct_message' in request.POST and 'recipient_username' in request.POST:
+            try:
+                recipient = User.objects.get(username=recipient_username)
+                crypto = rsa.encrypt(request.POST['direct_message'].encode('utf-8'), recipient.get_public_key())
+                signature = rsa.sign(crypto, user.get_private_key(), 'SHA-1')
+                encryp_tneata = 'MMMMM'.join([crypto, signature])
+                encryp_tneata = encryp_tneata.encode('Base64')
+                tneat = Tneata.objects.create(user=user, content=encryp_tneata)
+
+            except User.DoesNotExist:
+                return
 
 
 def follow(request):
