@@ -81,21 +81,20 @@ def dashboard(request, dic={}):
 
 def tneat(request):
     '''
-        The Tneata is encrypted using teh owner's Private key,
+        The Tneata is encrypted using the owner's Private key,
         the followers can use the owner's Public key decrypt and verify
         the ownership of the tneata
+
+        Tneatas are saved in DB in Base64,
+        so it needs decoding before decryption
     '''
     user = logged_in_user(request)
     if user:
         if 'tneata' in request.POST:
             crypto = rsa.encrypt(request.POST['tneata'].encode('utf-8'), user.get_private_key())
-            # print "crypto:", crypto
             signature = rsa.sign(crypto, user.get_private_key(), 'SHA-1')
-            # print "signature:", signature
-            encryp_tneata = crypto + 'MMMMM' + signature
-            print "1>", encryp_tneata
+            encryp_tneata = 'MMMMM'.join([crypto, signature])
             encryp_tneata = encryp_tneata.encode('Base64')
-            print "2>", encryp_tneata
 
             tneat = Tneata.objects.create(user=user, content=encryp_tneata)
 
