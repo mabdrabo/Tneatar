@@ -9,30 +9,41 @@ class User(models.Model):
         return Keypair.objects.get(user=self)
 
     def get_public_key(self):
-        return get_keypair()[0]
+        return (get_keypair()).public_key
 
-    def get_public_key(self):
-        return get_keypair()[1]
+    def get_private_key(self):
+        return (get_keypair()).private_key
 
-    def get_tneats(self):
+    def get_user_tneats(self):
+        return Tneata.objects.filter(user=self)
+
+    def get_followed_tneats(self):    // TODO
         return Tneata.objects.filter(user=self)
 
     def get_follow_requests(self):
         return Follow.objects.filter(followed=self, accepted=False)
 
+    def set_keypair(self, pubkey, privkey):
+        try:
+            keypair = Keypair.objects.get(user=self)
+            keypair.private_key = privkey
+            keypair.public_key = pubkey
+            keypair.save()
+            return keypair
+        except Keypair.DoesNotExist:
+            return Keypair.objects.create(user=self, private_key=privkey, public_key=pubkey)
+
 
 class Keypair(models.Model):
     user = models.ForeignKey(User, related_name='owner')
     private_key = models.CharField(max_length=1024)
-
-    def get_public_key(self):
-        return
+    public_key = models.CharField(max_length=1024)
 
 
 class Tneata(models.Model):
     user = models.ForeignKey(User, related_name='tneata_owner')
     content = models.CharField(max_length=128)
-    retweet_count = models.IntegerField()
+    retneat_count = models.IntegerField()
 
 
 class Follow(models.Model):
