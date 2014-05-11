@@ -1,4 +1,5 @@
 from django.db import models
+import rsa
 
 # Create your models here.
 class User(models.Model):
@@ -10,10 +11,10 @@ class User(models.Model):
         return (rsa.PublicKey(2,3).load_pkcs1(keypair.public_key), rsa.PrivateKey(1, 2, 3, 4, 5, 6, 7, 8).load_pkcs1(keypair.private_key))
 
     def get_public_key(self):
-        return get_keypair()[0]
+        return self.get_keypair()[0]
 
     def get_private_key(self):
-        return get_keypair()[1]
+        return self.get_keypair()[1]
 
     def get_user_tneats(self):
         return Tneata.objects.filter(user=self)
@@ -40,8 +41,11 @@ class Keypair(models.Model):
 
 class Tneata(models.Model):
     user = models.ForeignKey(User, related_name='tneata_owner')
-    content = models.CharField(max_length=128)
+    content = models.CharField(max_length=2048)
     retneat_count = models.IntegerField()
+
+    def __unicode__(self):
+        return "Tneata object"
 
 
 class Follow(models.Model):

@@ -9,25 +9,24 @@ import random, rsa
 def master(request):
     pubkey1, privkey1 = rsa.newkeys(1024, poolsize=8)
     pubkey2, privkey2 = rsa.newkeys(1024, poolsize=8)
-    print pubkey1, privkey1
-    print pubkey2, privkey2
     message = "Hello World!!"
     crypto = rsa.encrypt(message, pubkey1)
-    print crypto
+    print "crypto:", crypto
     signature = rsa.sign(crypto, privkey2, 'SHA-1')
-    print signature
+    print "crypto:", crypto
+    print "signature:", signature
     print rsa.verify(crypto, signature, pubkey2)
     message2 = rsa.decrypt(crypto, privkey1)
     print message2
 
-    fm = pubkey1.save_pkcs1(format='PEM')
-    print ">>>", fm
-    mf = rsa.PublicKey(2,3).load_pkcs1(fm, format='PEM')
-    print ">>>", mf
-    sg = privkey1.save_pkcs1(format='PEM')
-    print ">>>", sg
-    gs = rsa.PrivateKey(1, 2, 3, 4, 5, 6, 7, 8).load_pkcs1(sg, format='PEM')
-    print ">>>", gs
+    # fm = pubkey1.save_pkcs1(format='PEM')
+    # print ">>>", fm
+    # mf = rsa.PublicKey(2,3).load_pkcs1(fm, format='PEM')
+    # print ">>>", mf
+    # sg = privkey1.save_pkcs1(format='PEM')
+    # print ">>>", sg
+    # gs = rsa.PrivateKey(1, 2, 3, 4, 5, 6, 7, 8).load_pkcs1(sg, format='PEM')
+    # print ">>>", gs
 
     return render_to_response('master.html', {}, RequestContext(request))
 
@@ -39,7 +38,7 @@ def signup(request):
             if not new_object:
                 return render_to_response('master.html', {'info': 'account already exists, you can login'}, RequestContext(request))
             else:
-                pubkey, privkey = rsa.newkeys(1024, poolsize=8)
+                pubkey, privkey = rsa.newkeys(2048, poolsize=8)
                 user.set_keypair(pubkey, privkey)
                 user.password = make_password(password=request.POST['password'])
                 user.save()
@@ -74,18 +73,32 @@ def dashboard(request, dic={}):
     if 'username' in request.session:
         try:
             user = User.objects.get(username=request.session['username'])
-            return render_to_response('dashboard.html', dict(dic, **{'user': user}), RequestContext(request))
+            return render_to_response('dashboard.html', dict(dic, **{'user': user, 'tneats': user.get_user_tneats()}), RequestContext(request))
         except User.DoesNotExist:
-            return render_to_response('dashboard.html', dict(dic, **{'error': 'user not found'}), RequestContext(request))
+            return signout(request)
     return render_to_response('master.html', {'error': 'please login'}, RequestContext(request))
 
 
 def tneat(request):
+    '''
+        The Tneata is encrypted using teh owner's Private key,
+        the followers can use the owner's Public key decrypt and verify
+        the ownership of the tneata
+    '''
     user = logged_in_user(request)
     if user:
         if 'tneata' in request.POST:
-            encryp_tneata = request.POST['tneata']
-            tneat = Tneat.objects.create(user=user, content=encryp_tneata)
+            crypto = rsa.encrypt(request.POST['tneata'].encode('utf-8'), user.get_private_key())
+            # print "crypto:", crypto
+            signature = rsa.sign(crypto, user.get_private_key(), 'SHA-1')
+            # print "signature:", signature
+            encryp_tneata = crypto + 'MMMMM' + signature
+            print "1>", encryp_tneata
+            print type(encryp_tneata)
+            print "2>", encryp_tneata.decode('utf8')
+            print type(encryp_tneata)
+
+            tneat = Tneata.objects.create(user=user, content=encryp_tneata)
 
 
 def direct_message(request):
