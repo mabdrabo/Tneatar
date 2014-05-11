@@ -1,0 +1,63 @@
+{% extends  "master.html" %}
+
+{% block header %}
+{% endblock header %}
+
+{% block script %}
+	$('#dashboard-tab').addClass('active');
+	lat = {{ user.lat }};
+	lon = {{ user.lon }};
+	loadMapScript();
+{% endblock script %}
+
+{% block main_container %}
+
+	<div id='map-canvas' style="height:300px;width:100%;"></div>
+	<br/>
+    <div class="row-fluid">
+        <div class="well span4 text-center">
+            <h4>RPM</h4>
+            <h2>{{ objects.rpm_values.0.value }} r/m</h2>
+            <h6>max {{ extras.rpm_max }}</h6>
+            <h6>min {{ extras.rpm_min }}</h6>
+            <h6>avg {{ extras.rpm_avg|floatformat:"0" }}</h6>
+      	</div>
+      	<div class="well span4 text-center">
+            <h4>Speed</h4>
+            <h2>{{ objects.speed_values.0.value }} Km/h</h2>
+            <h6>max {{ extras.speed_max }}</h6>
+            <h6>min {{ extras.speed_min }}</h6>
+            <h6>avg {{ extras.speed_avg|floatformat:"0" }}</h6>
+      	</div>
+    	<div class="well span4 text-center">
+            <h4>Temperature</h4>
+            <h2>{{ objects.temp_values.0.value }} ˚C</h2>
+            <h6>max {{ extras.temp_max }}</h6>
+            <h6>min {{ extras.temp_min }}</h6>
+            <h6>avg {{ extras.temp_avg|floatformat:"0" }}</h6>
+      	</div>
+    </div>
+    <div class="row-fluid">
+		<div class="well span4 text-center">
+			<h4>Throttle</h4>
+			<h2>{{ objects.throttle_values.0.value }}%</h2>
+			<h6>max {{ extras.throttle_max }}</h6>
+            <h6>min {{ extras.throttle_min }}</h6>
+            <h6>avg {{ extras.throttle_avg|floatformat:"0" }}</h6>
+		</div>
+		<div class="well span4 text-center">
+			<h4>Fuel Level</h4>
+			<h2>{{ objects.fuel_values.0.value }}%</h2>
+			<h6>max {{ extras.fuel_max }}</h6>
+            <h6>min {{ extras.fuel_min }}</h6>
+            <h6>avg {{ extras.fuel_avg|floatformat:"0" }}</h6>
+		</div>
+		<div class="well span4 text-center">
+			<h4>Engine Load</h4>
+			<h2>{{ objects.engine_values.0.value }}%</h2>
+			<h6>max {{ extras.engine_max }}</h6>
+            <h6>min {{ extras.engine_min }}</h6>
+            <h6>avg {{ extras.engine_avg|floatformat:"0" }}</h6>
+		</div> 
+    </div>
+{% endblock main_container %}
