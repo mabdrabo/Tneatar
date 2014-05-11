@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response, redirect, render
 from django.template import RequestContext
 from django.contrib.auth.hashers import *
 from tneatar_app.models import *
+from django.db.models import Q
 import random, rsa
 
 # Create your views here.
@@ -79,6 +80,16 @@ def dashboard(request, dic={}):
     return render_to_response('master.html', {'error': 'please login'}, RequestContext(request))
 
 
+def profile(request, username):
+    user = logged_in_user(request)
+    if user:
+        try:
+            user2 = User.objects.get(username=username)
+            return render_to_response('dashboard.html', {'user': user2, 'tneats': user.get_user_tneats()}, RequestContext(request))
+        except User.DoesNotExist:
+            return
+
+
 def tneat(request):
     '''
         The Tneata is encrypted and digitally signed using the owner's Private key,
@@ -120,15 +131,35 @@ def send_direct_message(request):
     if user:
         if 'direct_message' in request.POST and 'recipient_username' in request.POST:
             try:
-                recipient = User.objects.get(username=recipient_username)
+                recipient = User.objects.get(username=request.POST['recipient_username'])
                 crypto = rsa.encrypt(request.POST['direct_message'].encode('utf-8'), recipient.get_public_key())
                 signature = rsa.sign(crypto, user.get_private_key(), 'SHA-1')
                 encryp_tneata = 'MMMMM'.join([crypto, signature])
                 encryp_tneata = encryp_tneata.encode('Base64')
-                tneat = Tneata.objects.create(user=user, content=encryp_tneata)
-
+                print encryp_tneata
+                dmsg = DirectMessage.objects.create(sender=user, recipient=recipient,  content=encryp_tneata)
             except User.DoesNotExist:
                 return
+
+
+def read_direct_messages(request, username):
+    user = logged_in_user(request)
+    if user:
+        try:
+            user2 = User.objects.get(username=username)
+            messages = DirectMessages.objects.filter(Q(sender=user, recipient=user2) | Q(sender=user2, recipient=user))
+            pubkey = user.get_public_key()
+            privkey2 = user2.get_private_key()
+
+            for msg in messages:
+                msg = msg.decode('Base64')
+                crypto, signature = 'MMMMM'.split(msg.content)
+                if rsa.verify(crypto, signature, pubkey):
+                    text = rsa.decrypt(crypto, privkey2)
+                    print text
+
+        except User.DoesNotExist:
+            return
 
 
 def follow(request):

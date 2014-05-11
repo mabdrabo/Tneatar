@@ -34,7 +34,7 @@ class User(models.Model):
 
 
 class Keypair(models.Model):
-    user = models.ForeignKey(User, related_name='owner')
+    user = models.ForeignKey(User, related_name='keypair_owner')
     private_key = models.CharField(max_length=1024)
     public_key = models.CharField(max_length=1024)
 
@@ -46,6 +46,15 @@ class Tneata(models.Model):
 
     def __unicode__(self):
         return "Tneata object"
+
+
+class DirectMessage(models.Model):
+    sender = models.ForeignKey(User, related_name='message_sender')
+    recipient = models.ForeignKey(User, related_name='message_recipient')
+    content = models.CharField(max_length=2048)
+
+    def __unicode__(self):
+        return "direct message object"
 
 
 class Follow(models.Model):

@@ -11,15 +11,25 @@
 
     <div class="row-fluid">
         <div class="well span2 text-center">
-            <h4>{{ request.session.username }}</h4>
+            <h4>{{ user.username }}</h4>
     	</div>
     	<div class="well span10">
+			{% ifnotequal user.username request.session.username  %}
+			<h3>Send a direct message</h3>
+			<form class="form form-inline" action="{% url 'send_direct_message' %}" method="post">
+				{% csrf_token %}
+				<textarea name='direct_message' style="width:80%;" rows="2" maxlength="100" placeholder='Write your Tneata here.'></textarea>
+				<input type="text" name="recipient_username" placeholder="recipient username">
+				<button type='submit' class="btn btn-primary" href="">send</button>
+			</form>
+			{% else %}
             <h3>Share a Tneata</h3>
 			<form class="form form-inline" action="{% url 'tneat' %}" method="post">
 				{% csrf_token %}
 				<textarea name='tneata' style="width:80%;" rows="2" maxlength="100" placeholder='Write your Tneata here.'></textarea>
 				<button type='submit' class="btn btn-primary" href="">Tneat</button>
 			</form>
+			{% endifnotequal %}
 			<hr>
 
 			{% for tneata in tneats %}
