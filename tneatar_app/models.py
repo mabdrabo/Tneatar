@@ -6,13 +6,14 @@ class User(models.Model):
     password = models.CharField(max_length=128)
 
     def get_keypair(self):
-        return Keypair.objects.get(user=self)
+        keypair = Keypair.objects.get(user=self)
+        return (rsa.PublicKey(2,3).load_pkcs1(keypair.public_key), rsa.PrivateKey(1, 2, 3, 4, 5, 6, 7, 8).load_pkcs1(keypair.private_key))
 
     def get_public_key(self):
-        return (get_keypair()).public_key
+        return get_keypair()[0]
 
     def get_private_key(self):
-        return (get_keypair()).private_key
+        return get_keypair()[1]
 
     def get_user_tneats(self):
         return Tneata.objects.filter(user=self)
@@ -24,14 +25,11 @@ class User(models.Model):
         return Follow.objects.filter(followed=self, accepted=False)
 
     def set_keypair(self, pubkey, privkey):
-        try:
-            keypair = Keypair.objects.get(user=self)
-            keypair.private_key = privkey.save_pkcs1(format='PEM')
-            keypair.public_key = pubkey.save_pkcs1(format='PEM')
-            keypair.save()
-            return keypair
-        except Keypair.DoesNotExist:
-            return Keypair.objects.create(user=self, private_key=privkey, public_key=pubkey)
+        keypair, new_object = Keypair.objects.get_or_create(user=self)
+        keypair.private_key = privkey.save_pkcs1()
+        keypair.public_key = pubkey.save_pkcs1()
+        keypair.save()
+        return keypair
 
 
 class Keypair(models.Model):
