@@ -1,9 +1,9 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, redirect, render
 from django.template import RequestContext
-from django.utils import simplejson
-from collections import OrderedDict
+from django.contrib.auth.hashers import *
 from tneatar_app.models import *
+import random, rsa
 
 # Create your views here.
 def master(request):
@@ -12,23 +12,33 @@ def master(request):
 
 def signup(request):
     if request.POST:
-        if 'username' in request.POST:
+        if 'username' in request.POST and 'password' in request.POST:
             user, new_object = User.objects.get_or_create(username=request.POST['username'])
-            request.session['username'] = user.username
-            return dashboard(request, dic={'success': "successfuly signed up and logged in as " + user.username})
-    return render_to_response('master.html', {'error': 'enter your username'}, RequestContext(request))
+            if not new_object:
+                return render_to_response('master.html', {'info': 'account already exists, you can login'}, RequestContext(request))
+            else:
+                pubkey, privkey = rsa.newkeys(1024, poolsize=8)
+                user.set_keypair(pubkey, privkey)
+                user.password = make_password(password=request.POST['password'])
+                user.save()
+                request.session['username'] = user.username
+                return dashboard(request, dic={'success': "successfuly signed up and logged in as " + user.username})
+    return render_to_response('master.html', {'error': 'enter your username/password'}, RequestContext(request))
 
 
 def signin(request):
     if request.POST:
-        if 'username' in request.POST:
+        if 'username' in request.POST and 'password' in request.POST:
             try:
                 user = User.objects.get(username=request.POST['username'])
-                request.session['username'] = user.username
-                return dashboard(request, dic={'success': "you're logged in as " + user.username})
+                if check_password(request.POST['password'], user.password):
+                    request.session['username'] = user.username
+                    return dashboard(request, dic={'success': "you're logged in as " + user.username})
+                else:
+                    return render_to_response('master.html', {'error': 'wrong username/password'},RequestContext(request))
             except User.DoesNotExist:
                 return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
-    return render_to_response('master.html', {'error': 'enter your username'}, RequestContext(request))
+    return render_to_response('master.html', {'error': 'enter your username/password'}, RequestContext(request))
 
 
 def signout(request):
@@ -42,11 +52,31 @@ def dashboard(request, dic={}):
     if 'username' in request.session:
         try:
             user = User.objects.get(username=request.session['username'])
-            objects, extras, locations = get_user_objects(user)
-            return render_to_response('dashboard.html', dict(dic, **{'user': user, 'objects': objects, 'extras': extras}), RequestContext(request))
+            return render_to_response('dashboard.html', dict(dic, **{'user': user}), RequestContext(request))
         except User.DoesNotExist:
             return render_to_response('dashboard.html', dict(dic, **{'error': 'user not found'}), RequestContext(request))
     return render_to_response('master.html', {'error': 'please login'}, RequestContext(request))
+
+
+def tneat(request):
+    user = logged_in_user(request)
+    if user:
+        if 'tneata' in request.POST:
+            encryp_tneata = request.POST['tneata']
+            tneat = Tneat.objects.create(user=user, content=encryp_tneata)
+
+
+def direct_message(request):
+    return
+
+
+def follow(request):
+    return
+
+
+def unfollow(request):
+    return
+
 
 def email_send(request):
     if request.POST:
@@ -56,3 +86,12 @@ def email_send(request):
             return render_to_response('contact.html', {'success': "email sent"}, RequestContext(request))
         else:
             return render_to_response('contact.html', {'error': "email Not sent, please try again later"}, RequestContext(request))
+
+
+def logged_in_user(request):
+    if 'username' in request.session:
+        try:
+            return User.objects.get(username=request.session['username'])
+        except User.DoesNotExist:
+            return None
+    return None
