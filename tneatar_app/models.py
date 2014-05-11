@@ -17,7 +17,7 @@ class User(models.Model):
     def get_user_tneats(self):
         return Tneata.objects.filter(user=self)
 
-    def get_followed_tneats(self):    // TODO
+    def get_followed_tneats(self):    # TODO
         return Tneata.objects.filter(user=self)
 
     def get_follow_requests(self):
