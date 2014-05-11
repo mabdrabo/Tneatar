@@ -7,6 +7,28 @@ import random, rsa
 
 # Create your views here.
 def master(request):
+    pubkey1, privkey1 = rsa.newkeys(1024, poolsize=8)
+    pubkey2, privkey2 = rsa.newkeys(1024, poolsize=8)
+    print pubkey1, privkey1
+    print pubkey2, privkey2
+    message = "Hello World!!"
+    crypto = rsa.encrypt(message, pubkey1)
+    print crypto
+    signature = rsa.sign(crypto, privkey2, 'SHA-1')
+    print signature
+    print rsa.verify(crypto, signature, pubkey2)
+    message2 = rsa.decrypt(crypto, privkey1)
+    print message2
+
+    fm = pubkey1.save_pkcs1(format='PEM')
+    print ">>>", fm
+    mf = rsa.PublicKey(2,3).load_pkcs1(fm, format='PEM')
+    print ">>>", mf
+    sg = privkey1.save_pkcs1(format='PEM')
+    print ">>>", sg
+    gs = rsa.PrivateKey(1, 2, 3, 4, 5, 6, 7, 8).load_pkcs1(sg, format='PEM')
+    print ">>>", gs
+
     return render_to_response('master.html', {}, RequestContext(request))
 
 
