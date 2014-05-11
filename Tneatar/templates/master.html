@@ -2,7 +2,7 @@
 <html>
 
   <head>
-    <title>SCCOP</title>
+    <title>Tneatar | Home</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <link rel="stylesheet" href="{{STATIC_URL}}css/bootstrap.min.css">
@@ -92,7 +92,6 @@
           <li id="home-tab"><a href="{% url 'home' %}">Home</a></li>
           {% if request.session.username %}
             <li id="dashboard-tab"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li id="log-tab"><a href="{% url 'log' %}">Log</a></li>
           {% endif %}
           <li id="about-tab"><a href="{% url 'about' %}">About</a></li>
           <li id="contact-tab"><a href="{% url 'contact' %}">Contact</a></li>
@@ -128,18 +127,23 @@
         <div class="jumbotron">
           <h1>Twitter..Secured!!</h1>
           <p class="lead">It is basically Twitter but with extreme security measures</p>
-          <a id='signup' class="btn btn-large btn-success" data-title="Enter Username" data-toggle="popover" data-html='true' data-content="<form class='form form-inline' method='POST' action='{% url 'signup' %}'>
-            {% csrf_token %}
-            <input type='text' name='username' width='20px' placeholder='username'>
-            <button id='ok-btn' class='btn btn-mini' type='submit'><i class='icon-ok'></i></button>
-          </form>">Sign up today</a>
+          {% if request.session.username %}
+            <a class="btn btn-large btn-success" href="{% url 'dashboard' %}">Go to Dashboard</a> 
+          {% else %}
+              <a id='signup' class="btn btn-large btn-success" data-title="Enter Username" data-toggle="popover" data-html='true' data-content="<form class='form' method='POST' action='{% url 'signup' %}'>
+                {% csrf_token %}
+                <input type='text' name='username' width='20px' placeholder='username'>
+                <input type='password' name='password' width='20px' placeholder='password'>
+                <button id='ok-btn' class='btn btn-mini' type='submit'><i class='icon-ok'></i></button>
+              </form>">Sign up today</a>
 
-          <a id='signin' class="btn btn-large btn-primary" data-title="Enter Username" data-toggle="popover" data-html='true' data-content="<form class='form form-inline' method='POST' action='{% url 'signin' %}'>
-            {% csrf_token %}
-            <input type='text' name='username' width='20px' placeholder='username'>
-            <button id='ok-btn' class='btn btn-mini' type='submit'><i class='icon-ok'></i></button>
-          </form>">Sign in</a>
-
+              <a id='signin' class="btn btn-large btn-primary" data-title="Enter Username" data-toggle="popover" data-html='true' data-content="<form class='form' method='POST' action='{% url 'signin' %}'>
+                {% csrf_token %}
+                <input type='text' name='username' width='20px' placeholder='username'>
+                <input type='password' name='password' width='20px' placeholder='password'>
+                <button id='ok-btn' class='btn btn-mini' type='submit'><i class='icon-ok'></i></button>
+              </form>">Sign in</a>
+        {% endif %}
         </div>
         <hr/>
         <div class="row-fluid marketing text-center">
