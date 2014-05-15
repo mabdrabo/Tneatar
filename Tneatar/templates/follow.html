@@ -1,0 +1,26 @@
+{% extends  "dashboard.html" %}
+{% block script %}
+{% endblock script %}
+
+{% block span10 %}
+    {% if followers %}
+        <h3>Followers</h3>
+        {% for f in followers %}
+            <a href="{% url 'profile' f.username %}">{{f.username}}</a>
+        {% endfor %}
+        <hr/>
+    {% endif %}
+    {% if followed %}
+        <h3>Followed</h3>
+        {% for f in followed %}
+            <a href="{% url 'profile' f.username %}">{{f.username}}</a>
+        {% endfor %}
+        <hr/>
+    {% endif %}
+    {% if requests %}
+        <h3>Follow requests</h3>
+        {% for f in requests %}
+            <a href="{% url 'profile' f.username %}">{{f.username}}</a>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

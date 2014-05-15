@@ -8,27 +8,6 @@ import random, rsa
 
 # Create your views here.
 def master(request):
-    pubkey1, privkey1 = rsa.newkeys(1024, poolsize=8)
-    pubkey2, privkey2 = rsa.newkeys(1024, poolsize=8)
-    message = "Hello World!!"
-    crypto = rsa.encrypt(message, pubkey1)
-    print "crypto:", crypto
-    signature = rsa.sign(crypto, privkey2, 'SHA-1')
-    print "crypto:", crypto
-    print "signature:", signature
-    print rsa.verify(crypto, signature, pubkey2)
-    message2 = rsa.decrypt(crypto, privkey1)
-    print message2
-
-    # fm = pubkey1.save_pkcs1(format='PEM')
-    # print ">>>", fm
-    # mf = rsa.PublicKey(2,3).load_pkcs1(fm, format='PEM')
-    # print ">>>", mf
-    # sg = privkey1.save_pkcs1(format='PEM')
-    # print ">>>", sg
-    # gs = rsa.PrivateKey(1, 2, 3, 4, 5, 6, 7, 8).load_pkcs1(sg, format='PEM')
-    # print ">>>", gs
-
     return render_to_response('master.html', {}, RequestContext(request))
 
 
@@ -70,54 +49,89 @@ def signout(request):
     return render_to_response('master.html', {'info': "You've Logged out"}, RequestContext(request))
 
 
-def dashboard(request, dic={}):
-    if 'username' in request.session:
-        try:
-            user = User.objects.get(username=request.session['username'])
-            return render_to_response('dashboard.html', dict(dic, **{'user': user, 'tneats': user.get_user_tneats()}), RequestContext(request))
-        except User.DoesNotExist:
-            return signout(request)
+def dashboard(request, username=None, dic=None):
+    dic = dic or {}
+    logged_user = logged_in_user(request)
+    if logged_user:
+        if username:
+            try:
+                user = User.objects.get(username=username)
+                try:
+                    Follow.objects.get(follower=logged_user, followed=user)
+                    decrypt = True
+                except Follow.DoesNotExist:
+                    decrypt = False
+            except User.DoesNotExist:
+                return render_to_response('master.html', {'error': 'wrong username'}, RequestContext(request))
+        else:
+            user = logged_user
+            decrypt = True
+        tneats = decrypt_user_tneatas(user) if decrypt else []
+
+        return render_to_response('dashboard.html', dict(dic, **{'user':user, 'tneats':tneats}), RequestContext(request))
     return render_to_response('master.html', {'error': 'please login'}, RequestContext(request))
-
-
-def profile(request, username):
-    user = logged_in_user(request)
-    if user:
-        try:
-            user2 = User.objects.get(username=username)
-            return render_to_response('dashboard.html', {'user': user2, 'tneats': user.get_user_tneats()}, RequestContext(request))
-        except User.DoesNotExist:
-            return
 
 
 def tneat(request):
     '''
-        The Tneata is encrypted and digitally signed using the owner's Private key,
-        the followers can use the owner's Public key to decrypt and verify
+        The Tneata is digitally signed using the owner's Private key,
+        the followers can use the owner's Public key to verify
         the ownership of the tneata to the owner
 
         Tneatas are saved in DB in Base64,
-        so it needs decoding before decryption
+        so it needs decoding before verification
     '''
     user = logged_in_user(request)
     if user:
         if 'tneata' in request.POST:
-            crypto = rsa.encrypt(request.POST['tneata'].encode('utf-8'), user.get_private_key())
-            signature = rsa.sign(crypto, user.get_private_key(), 'SHA-1')
-            encryp_tneata = 'MMMMM'.join([crypto, signature])
-            encryp_tneata = encryp_tneata.encode('Base64')
-            tneat = Tneata.objects.create(user=user, content=encryp_tneata)
+            t = request.POST['tneata'].encode('utf-8')
+            signature = rsa.sign(t, user.get_private_key(), 'SHA-1')
+            signed_tneata = 'MMMMM'.join([t, signature])
+            signed_tneata = signed_tneata.encode('Base64')
+            tneat = Tneata.objects.create(user=user, content=signed_tneata)
 
 
-def decrypt_tneatas():
+def decrypt_followed_users_and_my_tneatas(user):
     '''
+        Decrypts all tneatas by the user and the followed users
+
+        Used in Home page
     '''
-    user = logged_in_user(request)
+    r = []
     if user:
-        tneatas = user.get
+        tneatas = user.get_user_tneatas()
+        if tneatas and user.get_followed_tneatas():
+            tneatas = tneatas + user.get_followed_tneatas()
+        for tneata in tneatas:
+            t_content = tneata.content.decode('Base64')
+            t, signature = t_content.split('MMMMM')
+            if rsa.verify(t, signature, tneata.user.get_public_key()):
+                r.append({'content':t, 'tneata':tneata})
+
+    return r
 
 
-def send_direct_message(request):
+def decrypt_user_tneatas(user):
+    '''
+        Decrypts all tneatas by the user
+
+        Used in Dashboard and users' Profiles
+    '''
+    r = []
+    tneatas = user.get_user_tneatas()
+    print tneatas
+    for tneata in tneatas:
+        t_content = tneata.content.decode('Base64')
+        t, signature = t_content.split('MMMMM')
+        try:
+            if rsa.verify(t, signature, tneata.user.get_public_key()):
+                r.append({'content':t, 'tneata':tneata})
+        except:
+            pass
+    return r
+
+
+def send_message(request):
     '''
         The message is encrypted using the recipient's Public key,
         the message is digitally signed using the sender's Private key,
@@ -142,31 +156,82 @@ def send_direct_message(request):
                 return
 
 
-def read_direct_messages(request, username):
+def index_messages(request):
     user = logged_in_user(request)
-    if user:
+    if isinstance(user, User):
+        users = user.get_message_users()
+        print users
+        return render_to_response("messages.html", {'users':users}, RequestContext(request))
+    else:
+        return user
+
+
+def read_messages(request, username):
+    r = []
+    user = logged_in_user(request)
+    if isinstance(user, User):
         try:
             user2 = User.objects.get(username=username)
-            messages = DirectMessages.objects.filter(Q(sender=user, recipient=user2) | Q(sender=user2, recipient=user))
-            pubkey = user.get_public_key()
-            privkey2 = user2.get_private_key()
+            messages = DirectMessage.objects.filter(Q(sender=user, recipient=user2) | Q(sender=user2, recipient=user))
+            pubkey2 = user2.get_public_key()
+            privkey = user.get_private_key()
 
             for msg in messages:
-                msg = msg.decode('Base64')
-                crypto, signature = 'MMMMM'.split(msg.content)
-                if rsa.verify(crypto, signature, pubkey):
-                    text = rsa.decrypt(crypto, privkey2)
-                    print text
-
+                m_content = msg.content.decode('Base64')
+                crypto, signature = m_content.split('MMMMM')
+                if rsa.verify(crypto, signature, pubkey2):
+                    m = rsa.decrypt(crypto, privkey)
+                    r.append({'content':m, 'message':msg})
+            return render_to_response('thread.html', {'msgs':r}, RequestContext(request))
         except User.DoesNotExist:
             return
+    else:
+        return user
 
 
 def follow(request):
-    return
+    user = logged_in_user(request)
+    if user:
+        if 'followed_username' in request.POST:
+            try:
+                followed = User.objects.get(username=request.POST['followed_username'])
+                Follow.objects.create(follower=user, followed=followed)
+            except User.DoesNotExist:
+                return
+    else:
+        return user
 
 
 def unfollow(request):
+    user = logged_in_user(request)
+    if user:
+        if 'unfollowed_username' in request.POST:
+            try:
+                followed = User.objects.get(username=request.POST['unfollowed_username'])
+                f = Follow.objects.get(follower=user, followed=followed)
+                f.delete()
+            except (User.DoesNotExist, Follow.DoesNotExist):
+                return
+    else:
+        return user
+
+
+def index_follow(request):
+    user = logged_in_user(request)
+    if user:
+        followed =  user.get_followed()
+        followers = user.get_followers()
+        requests = user.get_follow_requests()
+        return render_to_response("follow.html", {'followed':followed, 'followers':followers, 'requests':requests}, RequestContext(request))
+    else:
+        return user
+
+
+def accept_follow(request):
+    return
+
+
+def tneatas_testing(request):
     return
 
 
@@ -185,5 +250,5 @@ def logged_in_user(request):
         try:
             return User.objects.get(username=request.session['username'])
         except User.DoesNotExist:
-            return None
-    return None
+            return signin(request)
+    return signin(request)

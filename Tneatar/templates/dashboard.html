@@ -1,7 +1,12 @@
 {% extends  "master.html" %}
 
-{% block header %}
-{% endblock header %}
+{% block title %}
+	{% ifnotequal user.username request.session.username  %}
+		<title>Tneatar | {{user.username}}</title>
+	{% else %}
+		<title>Tneatar | Dashboard</title>
+	{% endifnotequal %}
+{% endblock title %}
 
 {% block script %}
 	$('#dashboard-tab').addClass('active')
@@ -12,29 +17,40 @@
     <div class="row-fluid">
         <div class="well span2 text-center">
             <h4>{{ user.username }}</h4>
+			<hr/>
+			<ul class='nav nav-list'>
+				<li id="follow-tab"><a href="{% url 'index_follow' %}">Follows</a></li>
+				<li id="message-tab"><a href="{% url 'index_messages' %}">Messages</a></li>
+			</ul>
     	</div>
     	<div class="well span10">
-			{% ifnotequal user.username request.session.username  %}
-			<h3>Send a direct message</h3>
-			<form class="form form-inline" action="{% url 'send_direct_message' %}" method="post">
-				{% csrf_token %}
-				<textarea name='direct_message' style="width:80%;" rows="2" maxlength="100" placeholder='Write your Tneata here.'></textarea>
-				<input type="text" name="recipient_username" placeholder="recipient username">
-				<button type='submit' class="btn btn-primary" href="">send</button>
-			</form>
-			{% else %}
-            <h3>Share a Tneata</h3>
-			<form class="form form-inline" action="{% url 'tneat' %}" method="post">
-				{% csrf_token %}
-				<textarea name='tneata' style="width:80%;" rows="2" maxlength="100" placeholder='Write your Tneata here.'></textarea>
-				<button type='submit' class="btn btn-primary" href="">Tneat</button>
-			</form>
-			{% endifnotequal %}
-			<hr>
+			{% block span10 %}
+				{% ifnotequal user.username request.session.username  %}
+					<h3>Send a direct message</h3>
+					<form class="form form-inline" action="{% url 'send_message' %}" method="post">
+						{% csrf_token %}
+						<textarea name='direct_message' style="width:80%;" rows="2" maxlength="100" placeholder='Write your Tneata here.'></textarea>
+						<input type="hidden" name="recipient_username" value="{{user.username}}">
+						<button type='submit' class="btn btn-primary" href="">send</button>
+					</form>
+				{% else %}
+		            <h3>Share a Tneata</h3>
+					<form class="form form-inline" action="{% url 'tneat' %}" method="post">
+						{% csrf_token %}
+						<textarea name='tneata' style="width:80%;" rows="2" maxlength="100" placeholder='Write your Tneata here.'></textarea>
+						<button type='submit' class="btn btn-primary" href="">Tneat</button>
+					</form>
+				{% endifnotequal %}
+				<hr>
 
-			{% for tneata in tneats %}
-				{{tneata}}
-			{% endfor %}
+				{% for tneata in tneats %}
+					<div class="tneata">
+	                    <img src="" alt="" style="background-color: #FFFF00; "/>
+	                    <a href="{% url 'profile' tneata.tneata.user.username %}"><span>{{tneata.tneata.user.username}}</span></a>
+	                    <p>{{tneata.content|safe|urlize}}</p>
+	                </div>
+				{% endfor %}
+			{% endblock %}
     	</div>
 
     </div>

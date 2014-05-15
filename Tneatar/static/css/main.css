@@ -1,0 +1,73 @@
+html, body, #map-canvas {
+  height: 100%;
+  margin: 0px;
+  padding: 0px
+}
+body {
+  padding-top: 20px;
+  padding-bottom: 40px;
+  background-color: #E9E9E9;
+}
+
+a:hover, a:visited, a:link, a:active {
+  text-decoration: none;
+}
+
+#ok-btn {
+  padding: 3px;
+}
+
+h6 {
+  margin: 0;
+}
+
+/* Custom container */
+.container-narrow {
+  background-color: white;
+  padding: 10px;
+  margin: 0 auto;
+  max-width: 900px;
+  min-height: 700px;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+  margin: 60px 0;
+  text-align: center;
+}
+.jumbotron h1 {
+  font-size: 72px;
+  line-height: 1;
+}
+.jumbotron .btn {
+  font-size: 21px;
+  padding: 14px 24px;
+}
+
+/* Supporting marketing content */
+.marketing {
+  margin: 60px 0;
+}
+.marketing p + h4 {
+  margin-top: 28px;
+}
+div.tneata
+{
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+div.tneata img
+{
+    width: 60px;
+    height: 60px;
+    float: left;
+    margin-right: 10px;
+}
+div.tneata a
+{
+    color: #29AAE1;
+}
+div.tneata span
+{
+    font-weight: bold;
+}

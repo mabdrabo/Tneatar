@@ -1,0 +1,18 @@
+{% extends  "dashboard.html" %}
+
+{% block script %}
+{% endblock script %}
+
+{% block span10 %}
+    <h3>Conversations</h3>
+    {% if users %}
+        <ul class='nav nav-list'>
+            {% for u in users %}
+                <li>
+                    <a href="{% url 'show_message' u.username %}">{{u.username}}</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <hr/>
+    {% endif %}
+{% endblock %}
