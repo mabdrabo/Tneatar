@@ -73,15 +73,24 @@
 
       {% block main_container %}
         {% if request.session.username %}
-            <div class="jumbotron">
-                {% for t in tneatas %}
-                    <div class="tneata">
-                        <img src="" alt="" style="background-color: #{{t.tneata.user.color}}; "/>
-                        <a href="{% url 'profile' t.tneata.user.username %}">
-                            <span>{{t.tneata.user.username}}</span></a>
-                        <p>{{t.content|safe|urlize}}</p>
-                    </div>
-                {% endfor %}
+            <div class="row-fluid">
+                <div class="well span3 text-center">
+                    <h4>Trending topics</h4>
+                    <hr/>
+                    {% for tag in tags %}
+                        {{tag}}
+                    {% endfor %}
+                </div>
+                <div class="well span9">
+                    {% for t in tneatas %}
+                        <div class="tneata">
+                            <img src="" alt="" style="background-color: #{{t.tneata.user.color}}; "/>
+                            <a href="{% url 'profile' t.tneata.user.username %}">
+                                <span>{{t.tneata.user.username}}</span></a>
+                            <p>{{t.content|safe|urlize}}</p>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         {% else %}
             <div class="jumbotron">

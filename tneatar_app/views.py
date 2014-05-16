@@ -102,10 +102,13 @@ def tneat(request):
         if 'tneata' in request.POST:
             t = request.POST['tneata'].encode('utf-8')
             if len(t) > 0:
+                tags = extract_hashtags(t)
+                hashtags = map(lambda tag: HashTag.objects.get_or_create(name=tag)[0], tags)
                 signature = rsa.sign(t, logged_user.get_private_key(), 'SHA-1')
                 signed_tneata = 'MMMMM'.join([t, signature])
                 signed_tneata = signed_tneata.encode('Base64')
                 tneat = Tneata.objects.create(user=logged_user, content=signed_tneata)
+                [tag.add_tneata(tneat) for tag in hashtags]
                 return dashboard(request, dic={'success':'your tneata has just been published'})
             else:
                 return dashboard(request, dic={'error':'you can not publish a blank tneata'})
@@ -218,9 +221,9 @@ def read_messages(request, username):
 def follow(request):
     user = logged_in_user(request)
     if user:
-        if 'followed_username' in request.POST:
+        if 'username' in request.POST:
             try:
-                followed = User.objects.get(username=request.POST['followed_username'])
+                followed = User.objects.get(username=request.POST['username'])
                 Follow.objects.create(follower=user, followed=followed)
                 return dashboard(request, username=followed.username, dic={'success':'Follow request sent!'})
             except User.DoesNotExist:
@@ -232,9 +235,9 @@ def follow(request):
 def unfollow(request):
     user = logged_in_user(request)
     if user:
-        if 'unfollowed_username' in request.POST:
+        if 'username' in request.POST:
             try:
-                followed = User.objects.get(username=request.POST['unfollowed_username'])
+                followed = User.objects.get(username=request.POST['username'])
                 f = Follow.objects.get(follower=user, followed=followed)
                 f.delete()
                 return dashboard(request, username=followed.username, dic={'success':'You are now not following!' + followed.username})
@@ -260,9 +263,9 @@ def index_follow(request):
 def accept_follow(request):
     logged_user = logged_in_user(request)
     if logged_user:
-        if 'follower_username' in request.POST:
+        if 'username' in request.POST:
             try:
-                follower = User.objects.get(username=request.POST['followed_username'])
+                follower = User.objects.get(username=request.POST['username'])
                 f = Follow.objects.get(follower=follower, followed=logged_user)
                 f.accepted = True
                 f.save()
@@ -301,5 +304,3 @@ def extract_hashtags(tneata):
         matches = re.match(r".*?\s#(\w+)", tneata)
 
     return hash_tags
-
-

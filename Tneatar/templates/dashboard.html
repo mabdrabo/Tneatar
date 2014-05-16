@@ -19,12 +19,18 @@
 			{% block span3 %}
 	            <h4>{{ user.username }}</h4>
 				{% ifnotequal user.username request.session.username  %}
-					<form action="{% url follow_state %}" method="post">
-						{% csrf_token %}
-						<img src="" alt="" style="background-color: #{{user.color}}; "/>
-						<input type="hidden" name="username" value="{{user.username}}">
-						<input class='btn' type="submit" value="{{follow_state}}">
-					</form>
+					{% ifequal follow_state 'follow'  %}
+						<form action="{% url 'follow' %}" method="post">
+					{% else %}
+						{% ifequal follow_state 'follow'  %}
+							<form action="{% url 'follow' %}" method="post">
+						{% endifequal %}
+					{% endifequal %}
+							{% csrf_token %}
+							<img src="" alt="" style="background-color: #{{user.color}}; "/>
+							<input type="hidden" name="username" value="{{user.username}}">
+							<input class='btn' type="submit" value="{{follow_state}}">
+						</form>
 				{% endifnotequal %}
 				<hr/>
 				<ul class='nav nav-list'>
