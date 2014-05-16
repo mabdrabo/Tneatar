@@ -8,7 +8,12 @@ import random, rsa
 
 # Create your views here.
 def master(request):
-    return render_to_response('master.html', {}, RequestContext(request))
+    user = logged_in_user(request)
+    if user:
+        tneatas = decrypt_followed_users_and_my_tneatas(user)
+        return render_to_response('master.html', {'tneatas':tneatas}, RequestContext(request))
+    else:
+        return render_to_response('master.html', {}, RequestContext(request))
 
 
 def signup(request):

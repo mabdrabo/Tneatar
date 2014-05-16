@@ -73,12 +73,21 @@
       {% endif %}
 
       {% block main_container %}
-        <div class="jumbotron">
-          <h1>Twitter..Secured!!</h1>
-          <p class="lead">It is basically Twitter but with extreme security measures</p>
-          {% if request.session.username %}
-            <a class="btn btn-large btn-success" href="{% url 'dashboard' %}">Go to Dashboard</a>
-          {% else %}
+        {% if request.session.username %}
+            <div class="jumbotron">
+                {% for t in tneatas %}
+                    <div class="tneata">
+                        <img src="" alt="" style="background-color: #FFFF00; "/>
+                        <a href="{% url 'profile' t.tneata.user.username %}">
+                            <span>{{t.tneata.user.username}}</span></a>
+                        <p>{{t.content|safe|urlize}}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="jumbotron">
+              <h1>Twitter..Secured!!</h1>
+              <p class="lead">It is basically Twitter but with extreme security measures</p>
               <a id='signup' class="btn btn-large btn-success" data-title="Enter Username" data-toggle="popover" data-html='true' data-content="<form class='form' method='POST' action='{% url 'signup' %}'>
                 {% csrf_token %}
                 <input type='text' name='username' width='20px' placeholder='username'>
@@ -92,26 +101,27 @@
                 <input type='password' name='password' width='20px' placeholder='password'>
                 <button id='ok-btn' class='btn btn-mini' type='submit'><i class='icon-ok'></i></button>
               </form>">Sign in</a>
+            </div>
+            <hr/>
+            <div class="row-fluid marketing text-center">
+              <div class="span6">
+                <h4>Features</h4>
+                <p>Integrity</p>
+                <p>Authenticity</p>
+                <p></p>
+                <p>Man in the middle attack protection</p>
+                <p>Cross site scripting (XSS) protection</p>
+                <p>Cross site request forgery (CSRF) protection</p>
+                <p>SQL injection protection</p>
+                <p>Clickjacking protection</p>
+              </div>
+
+              <div class="span6">
+                <h4>For Developers</h4>
+                <p><a href="https://github.com/mabdrabo/Tneatar">Opensource Django software</a></p>
+              </div>
+            </div>
         {% endif %}
-        </div>
-        <hr/>
-        <div class="row-fluid marketing text-center">
-          <div class="span6">
-            <h4>Features</h4>
-            <p>Man-in-the-middle attack-proof</p>
-
-            <p></p>
-
-            <p></p>
-
-            <p></p>
-          </div>
-
-          <div class="span6">
-            <h4>For Developers</h4>
-            <p><a href="https://github.com/mabdrabo/Tneatar">Opensource Django software</a></p>
-          </div>
-        </div>
         <hr/>
         <footer>
           <small>
