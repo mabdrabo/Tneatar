@@ -88,6 +88,9 @@
                             <a href="{% url 'profile' t.tneata.user.username %}">
                                 <span>{{t.tneata.user.username}}</span></a>
                             <p>{{t.content|safe|urlize}}</p>
+                            {% ifnotequal request.session.username t.tneata.user.username %}
+                            <a href="{% url 'retneat' t.tneata.pk %}">retneat</a>
+                            {% endifnotequal %}
                         </div>
                     {% endfor %}
                 </div>
@@ -116,7 +119,6 @@
                 <h4>Features</h4>
                 <p>Integrity</p>
                 <p>Authenticity</p>
-                <p></p>
                 <p>Man in the middle attack protection</p>
                 <p>Cross site scripting (XSS) protection</p>
                 <p>Cross site request forgery (CSRF) protection</p>
