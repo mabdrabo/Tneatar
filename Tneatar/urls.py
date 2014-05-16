@@ -6,7 +6,6 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^about$', TemplateView.as_view(template_name='about.html'), name="about"),
-	url(r'^contact$', TemplateView.as_view(template_name='contact.html'), name="contact"),
 )
 
 urlpatterns += patterns('tneatar_app.views',

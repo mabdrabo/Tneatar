@@ -1,10 +1,15 @@
 from django.db import models
-import rsa
+import rsa, random
+
+COLOR_CODE_CHOICES = ['A', 'B', 'C', 'D', 'E', 'F'] + range(0,10)
+def random_color():
+    return ''.join([str(n) for n in [random.choice(COLOR_CODE_CHOICES) for i in range(0,6)]])
 
 # Create your models here.
 class User(models.Model):
     username = models.CharField(unique=True,max_length=128)
     password = models.CharField(max_length=128)
+    color = models.CharField(max_length=6, default=random_color)
 
     def get_keypair(self):
         keypair = Keypair.objects.get(user=self)

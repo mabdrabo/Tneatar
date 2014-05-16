@@ -8,9 +8,9 @@ import random, rsa
 
 # Create your views here.
 def master(request):
-    user = logged_in_user(request)
-    if user:
-        tneatas = decrypt_followed_users_and_my_tneatas(user)
+    logged_user = logged_in_user(request)
+    if isinstance(logged_user, User):
+        tneatas = decrypt_followed_users_and_my_tneatas(logged_user)
         return render_to_response('master.html', {'tneatas':tneatas}, RequestContext(request))
     else:
         return render_to_response('master.html', {}, RequestContext(request))
@@ -86,14 +86,14 @@ def tneat(request):
         Tneatas are saved in DB in Base64,
         so it needs decoding before verification
     '''
-    user = logged_in_user(request)
-    if user:
+    logged_user = logged_in_user(request)
+    if isinstance(logged_user, User):
         if 'tneata' in request.POST:
             t = request.POST['tneata'].encode('utf-8')
-            signature = rsa.sign(t, user.get_private_key(), 'SHA-1')
+            signature = rsa.sign(t, logged_user.get_private_key(), 'SHA-1')
             signed_tneata = 'MMMMM'.join([t, signature])
             signed_tneata = signed_tneata.encode('Base64')
-            tneat = Tneata.objects.create(user=user, content=signed_tneata)
+            tneat = Tneata.objects.create(user=logged_user, content=signed_tneata)
 
 
 def decrypt_followed_users_and_my_tneatas(user):
@@ -162,13 +162,13 @@ def send_message(request):
 
 
 def index_messages(request):
-    user = logged_in_user(request)
-    if isinstance(user, User):
-        users = user.get_message_users()
+    logged_user = logged_in_user(request)
+    if isinstance(logged_user, User):
+        users = logged_user.get_message_users()
         print users
         return render_to_response("messages.html", {'users':users}, RequestContext(request))
     else:
-        return user
+        return logged_user
 
 
 def read_messages(request, username):

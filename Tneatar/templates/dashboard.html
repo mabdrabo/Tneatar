@@ -16,12 +16,14 @@
 
     <div class="row-fluid">
         <div class="well span2 text-center">
-            <h4>{{ user.username }}</h4>
-			<hr/>
-			<ul class='nav nav-list'>
-				<li id="follow-tab"><a href="{% url 'index_follow' %}">Follows</a></li>
-				<li id="message-tab"><a href="{% url 'index_messages' %}">Messages</a></li>
-			</ul>
+			{% block span2 %}
+	            <h4>{{ user.username }}</h4>
+				<hr/>
+				<ul class='nav nav-list'>
+					<li id="follow-tab"><a href="{% url 'index_follow' %}">Follows</a></li>
+					<li id="message-tab"><a href="{% url 'index_messages' %}">Messages</a></li>
+				</ul>
+			{% endblock %}
     	</div>
     	<div class="well span10">
 			{% block span10 %}
@@ -43,11 +45,11 @@
 				{% endifnotequal %}
 				<hr>
 
-				{% for tneata in tneats %}
+				{% for t in tneats %}
 					<div class="tneata">
-	                    <img src="" alt="" style="background-color: #FFFF00; "/>
-	                    <a href="{% url 'profile' tneata.tneata.user.username %}"><span>{{tneata.tneata.user.username}}</span></a>
-	                    <p>{{tneata.content|safe|urlize}}</p>
+	                    <img src="" alt="" style="background-color: #{{t.tneata.user.color}}; "/>
+	                    <a href="{% url 'profile' t.tneata.user.username %}"><span>{{t.tneata.user.username}}</span></a>
+	                    <p>{{t.content|safe|urlize}}</p>
 	                </div>
 				{% endfor %}
 			{% endblock %}

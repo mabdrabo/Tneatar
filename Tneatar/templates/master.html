@@ -77,7 +77,7 @@
             <div class="jumbotron">
                 {% for t in tneatas %}
                     <div class="tneata">
-                        <img src="" alt="" style="background-color: #FFFF00; "/>
+                        <img src="" alt="" style="background-color: #{{t.tneata.user.color}}; "/>
                         <a href="{% url 'profile' t.tneata.user.username %}">
                             <span>{{t.tneata.user.username}}</span></a>
                         <p>{{t.content|safe|urlize}}</p>

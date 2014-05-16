@@ -6,6 +6,7 @@
     {% if followers %}
         <h3>Followers</h3>
         {% for f in followers %}
+        <img src="" alt="" style="background-color: #{{f.color}}; "/>
             <a href="{% url 'profile' f.username %}">{{f.username}}</a>
         {% endfor %}
         <hr/>
@@ -16,6 +17,7 @@
             <div class="inline">
                 <form action="{% url 'unfollow' %}" method="post">
                     {% csrf_token %}
+                    <img src="" alt="" style="background-color: #{{f.color}}; "/>
                     <a href="{% url 'profile' f.username %}">{{f.username}}</a>
                     <input type="hidden" name="unfollowed_username" value="{{f.username}}">
                     <input class='btn' type="submit" value="unfollow">
@@ -29,6 +31,7 @@
         {% for f in requests %}
             <form action="{% url 'accept_follow' %}" method="post">
                 {% csrf_token %}
+                <img src="" alt="" style="background-color: #{{f.follower.color}}; "/>
                 <a href="{% url 'profile' f.follower.username %}">{{f.follower.username}}</a>
                 <input type="hidden" name="follower_username" value="{{f.follower.username}}">
                 <input class='btn' type="submit" value="accept">
