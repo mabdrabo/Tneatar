@@ -55,6 +55,13 @@ def signout(request):
 
 
 def dashboard(request, username=None, dic=None):
+    '''
+        This function loads the logged in user and adds the content of the
+        optionally passed dic to the dictionary that is sent to the template.
+
+        if a username is passed, that would mean that a logged in user is trying
+        to view the profile of another user whose username is the passed one.
+    '''
     dic = dic or {}
     logged_user = logged_in_user(request)
     if logged_user:
@@ -90,10 +97,18 @@ def tneat(request):
     if isinstance(logged_user, User):
         if 'tneata' in request.POST:
             t = request.POST['tneata'].encode('utf-8')
-            signature = rsa.sign(t, logged_user.get_private_key(), 'SHA-1')
-            signed_tneata = 'MMMMM'.join([t, signature])
-            signed_tneata = signed_tneata.encode('Base64')
-            tneat = Tneata.objects.create(user=logged_user, content=signed_tneata)
+            if len(t) > 0:
+                signature = rsa.sign(t, logged_user.get_private_key(), 'SHA-1')
+                signed_tneata = 'MMMMM'.join([t, signature])
+                signed_tneata = signed_tneata.encode('Base64')
+                tneat = Tneata.objects.create(user=logged_user, content=signed_tneata)
+                return dashboard(request, dic={'success':'your tneata has just been published'})
+            else:
+                return dashboard(request, dic={'error':'you can not publish a blank tneata'})
+        else:
+            return dashboard(request, dic={'error':'error, try again later.'})
+    else:
+        return logged_user
 
 
 def decrypt_followed_users_and_my_tneatas(user):
