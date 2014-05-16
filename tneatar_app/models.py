@@ -1,5 +1,5 @@
+import random, re, rsa
 from django.db import models
-import rsa, random
 
 COLOR_CODE_CHOICES = ['A', 'B', 'C', 'D', 'E', 'F'] + range(0,10)
 def random_color():
@@ -68,7 +68,6 @@ class Tneata(models.Model):
     def __unicode__(self):
         return "Tneata object " + str(self.pk)
 
-
 class DirectMessage(models.Model):
     sender = models.ForeignKey(User, related_name='message_sender')
     recipient = models.ForeignKey(User, related_name='message_recipient')
@@ -87,3 +86,19 @@ class Follow(models.Model):
         self.accepted = True
         self.save()
         return self.accepted
+
+
+class HashTag(models.Model):
+    name = models.CharField(max_length=140)
+    tneats = models.ManyToManyField(Tneata)
+
+    def __unicode__(self):
+        return unicode(self.name)
+
+    def add_tneata(self, tneata):
+        self.tneats.add(tneata)
+        self.save()
+
+    def add_tneats(self, tneats):
+        for tneata in tneats:
+            self.add_tneata(tneata)
