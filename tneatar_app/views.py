@@ -158,6 +158,32 @@ def decrypt_user_tneatas(user):
     return r
 
 
+def retneat(request, tneata_id):
+    logged_user = logged_in_user(request)
+    if isinstance(logged_user, User):
+        try:
+            tn = Tneata.objects.get(pk=tneata_id)
+            original_user = tn.user
+            t_content = tn.content.decode('Base64')
+            text, signature = t_content.split('MMMMM')
+            try:
+                if rsa.verify(text, signature, original_user.get_public_key()):
+                    t = text
+                    if len(t) > 0:
+                        tags = extract_hashtags(t)
+                        hashtags = map(lambda tag: HashTag.objects.get_or_create(name=tag)[0], tags)
+                        signature = rsa.sign(t, logged_user.get_private_key(), 'SHA-1')
+                        signed_tneata = 'MMMMM'.join([t, signature])
+                        signed_tneata = signed_tneata.encode('Base64')
+                        tneat = Tneata.objects.create(user=logged_user, content=signed_tneata, retneat_from = original_user)
+                        [tag.add_tneata(tneat) for tag in hashtags]
+                        return dashboard(request, dic={'success':'Retweet success'})
+            except:
+                return dashboard(request, dic={'error':'Integrity violation'})
+        except Tneata.DoesNotExist:
+            return dashboard(request, dic={'error':'error, try again later.'})
+    return logged_user
+
 def send_message(request):
     '''
         The message is encrypted using the recipient's Public key,
