@@ -282,3 +282,18 @@ def logged_in_user(request):
         except User.DoesNotExist:
             return signin(request)
     return signin(request)
+
+
+def extract_hashtags(tneata):
+    matches = re.match(r".*?\s#(\w+)", tneata)
+    hash_tags = []
+    while matches:
+        hash_tag = matches.group(1)
+        hash_tags.append(hash_tag)
+        beg = tneata.find("#%s" % hash_tag)
+        tneata = tneata[(beg + 1 + len(hash_tag)) : ]
+        matches = re.match(r".*?\s#(\w+)", tneata)
+
+    return hash_tags
+
+
