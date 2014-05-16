@@ -77,9 +77,11 @@
                 <div class="well span3 text-center">
                     <h4>Trending topics</h4>
                     <hr/>
+                    <ul class='nav nav-list'>
                     {% for tag in tags %}
-                        {{tag}}
+                        <li>{{tag}}</li>
                     {% endfor %}
+                    </ul>
                 </div>
                 <div class="well span9">
                     {% for t in tneatas %}

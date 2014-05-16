@@ -11,7 +11,12 @@ def master(request):
     logged_user = logged_in_user(request)
     if isinstance(logged_user, User):
         tneatas = decrypt_followed_users_and_my_tneatas(logged_user)
-        return render_to_response('master.html', {'tneatas':tneatas}, RequestContext(request))
+        it = HashTag.objects.iterator()
+        tags = []
+        for cnt, tag in enumerate(it):
+            if cnt >= 10: break
+            tags.append(tag)
+        return render_to_response('master.html', {'tneatas':tneatas, 'tags':tags}, RequestContext(request))
     else:
         return render_to_response('master.html', {}, RequestContext(request))
 
@@ -320,7 +325,7 @@ def logged_in_user(request):
 
 
 def extract_hashtags(tneata):
-    matches = re.match(r".*?\s#(\w+)", tneata)
+    matches = re.match(r".*?#(\w+)", tneata)
     hash_tags = []
     while matches:
         hash_tag = matches.group(1)
