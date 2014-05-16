@@ -23,6 +23,5 @@ urlpatterns += patterns('tneatar_app.views',
     url(r'^follow/delete$', "unfollow", name="unfollow"),
     url(r'^follow/index$', "index_follow", name="index_follow"),
     url(r'^follow/accept$', "accept_follow", name="accept_follow"),
-	url(r'^email/send$', "email_send", name="email_send"),
     url(r'^tneatas/testing$', "tneatas_testing", name="tneatas_testing"),
 )
