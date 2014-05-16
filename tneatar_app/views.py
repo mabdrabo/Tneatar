@@ -215,8 +215,10 @@ def unfollow(request):
                 followed = User.objects.get(username=request.POST['unfollowed_username'])
                 f = Follow.objects.get(follower=user, followed=followed)
                 f.delete()
-            except (User.DoesNotExist, Follow.DoesNotExist):
-                return
+            except User.DoesNotExist:
+                return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
+            except Follow.DoesNotExist:
+                return render_to_response('master.html', {'error': 'The user needs to follow you first before you can unfollow request!'}, RequestContext(request))
     else:
         return user
 
@@ -233,7 +235,23 @@ def index_follow(request):
 
 
 def accept_follow(request):
-    return
+    logged_user = logged_in_user(request)
+    if logged_user:
+        if 'follower_username' in request.POST:
+            try:
+                follower = User.objects.get(username=request.POST['followed_username'])
+                f = Follow.objects.get(follower=follower, followed=logged_user)
+                f.accepted = True
+                f.save()
+                return index_follow(request)
+            except User.DoesNotExist:
+                return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
+            except Follow.DoesNotExist:
+                return render_to_response('master.html', {'error': 'The user needs to follow you first before you can accept the follow request!'}, RequestContext(request))
+        else:
+            return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
+    else:
+        return logged_user
 
 
 def tneatas_testing(request):

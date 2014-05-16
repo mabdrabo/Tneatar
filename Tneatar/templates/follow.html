@@ -13,14 +13,26 @@
     {% if followed %}
         <h3>Followed</h3>
         {% for f in followed %}
-            <a href="{% url 'profile' f.username %}">{{f.username}}</a>
+            <div class="inline">
+                <form action="{% url 'unfollow' %}" method="post">
+                    {% csrf_token %}
+                    <a href="{% url 'profile' f.username %}">{{f.username}}</a>
+                    <input type="hidden" name="unfollowed_username" value="{{f.username}}">
+                    <input class='btn' type="submit" value="unfollow">
+                </form>
+            </div>
         {% endfor %}
         <hr/>
     {% endif %}
     {% if requests %}
         <h3>Follow requests</h3>
         {% for f in requests %}
-            <a href="{% url 'profile' f.username %}">{{f.username}}</a>
+            <form action="{% url 'accept_follow' %}" method="post">
+                {% csrf_token %}
+                <a href="{% url 'profile' f.follower.username %}">{{f.follower.username}}</a>
+                <input type="hidden" name="follower_username" value="{{f.follower.username}}">
+                <input class='btn' type="submit" value="accept">
+            </form>
         {% endfor %}
     {% endif %}
 {% endblock %}
