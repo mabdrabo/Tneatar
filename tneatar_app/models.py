@@ -91,12 +91,17 @@ class Follow(models.Model):
 class HashTag(models.Model):
     name = models.CharField(max_length=140)
     tneats = models.ManyToManyField(Tneata)
+    weight = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-weight',]
 
     def __unicode__(self):
         return unicode(self.name)
 
     def add_tneata(self, tneata):
         self.tneats.add(tneata)
+        self.weight = self.weight + 1
         self.save()
 
     def add_tneats(self, tneats):
