@@ -15,9 +15,17 @@
 {% block main_container %}
 
     <div class="row-fluid">
-        <div class="well span2 text-center">
-			{% block span2 %}
+        <div class="well span3 text-center">
+			{% block span3 %}
 	            <h4>{{ user.username }}</h4>
+				{% ifnotequal user.username request.session.username  %}
+					<form action="{% url follow_state %}" method="post">
+						{% csrf_token %}
+						<img src="" alt="" style="background-color: #{{user.color}}; "/>
+						<input type="hidden" name="username" value="{{user.username}}">
+						<input class='btn' type="submit" value="{{follow_state}}">
+					</form>
+				{% endifnotequal %}
 				<hr/>
 				<ul class='nav nav-list'>
 					<li id="follow-tab"><a href="{% url 'index_follow' %}">Follows</a></li>
@@ -25,7 +33,7 @@
 				</ul>
 			{% endblock %}
     	</div>
-    	<div class="well span10">
+    	<div class="well span9">
 			{% block span10 %}
 				{% ifnotequal user.username request.session.username  %}
 					<h3>Send a direct message</h3>

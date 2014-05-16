@@ -63,16 +63,20 @@ def dashboard(request, username=None, dic=None):
         to view the profile of another user whose username is the passed one.
     '''
     dic = dic or {}
+    follow_status = None
     logged_user = logged_in_user(request)
     if logged_user:
         if username:
             try:
                 user = User.objects.get(username=username)
                 try:
-                    Follow.objects.get(follower=logged_user, followed=user)
-                    decrypt = True
+                    f = Follow.objects.get(follower=logged_user, followed=user)
+                    decrypt = f.accepted
+                    if f.accepted:
+                        follow_status = "unfollow"
                 except Follow.DoesNotExist:
                     decrypt = False
+                    follow_status = "follow"
             except User.DoesNotExist:
                 return render_to_response('master.html', {'error': 'wrong username'}, RequestContext(request))
         else:
@@ -80,7 +84,7 @@ def dashboard(request, username=None, dic=None):
             decrypt = True
         tneats = decrypt_user_tneatas(user) if decrypt else []
 
-        return render_to_response('dashboard.html', dict(dic, **{'user':user, 'tneats':tneats}), RequestContext(request))
+        return render_to_response('dashboard.html', dict(dic, **{'user':user, 'tneats':tneats, 'follow_state':follow_status}), RequestContext(request))
     return render_to_response('master.html', {'error': 'please login'}, RequestContext(request))
 
 
@@ -218,6 +222,7 @@ def follow(request):
             try:
                 followed = User.objects.get(username=request.POST['followed_username'])
                 Follow.objects.create(follower=user, followed=followed)
+                return dashboard(request, username=followed.username, dic={'success':'Follow request sent!'})
             except User.DoesNotExist:
                 return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
     else:
@@ -232,6 +237,7 @@ def unfollow(request):
                 followed = User.objects.get(username=request.POST['unfollowed_username'])
                 f = Follow.objects.get(follower=user, followed=followed)
                 f.delete()
+                return dashboard(request, username=followed.username, dic={'success':'You are now not following!' + followed.username})
             except User.DoesNotExist:
                 return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
             except Follow.DoesNotExist:
