@@ -173,7 +173,9 @@ def send_message(request):
                 print encryp_tneata
                 dmsg = DirectMessage.objects.create(sender=user, recipient=recipient,  content=encryp_tneata)
             except User.DoesNotExist:
-                return
+                return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
+        return render_to_response('master.html', {'error': 'error'}, RequestContext(request))
+    return user
 
 
 def index_messages(request):
@@ -204,7 +206,7 @@ def read_messages(request, username):
                     r.append({'content':m, 'message':msg})
             return render_to_response('thread.html', {'msgs':r}, RequestContext(request))
         except User.DoesNotExist:
-            return
+            return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
     else:
         return user
 
@@ -217,7 +219,7 @@ def follow(request):
                 followed = User.objects.get(username=request.POST['followed_username'])
                 Follow.objects.create(follower=user, followed=followed)
             except User.DoesNotExist:
-                return
+                return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
     else:
         return user
 
@@ -271,16 +273,6 @@ def accept_follow(request):
 
 def tneatas_testing(request):
     return
-
-
-def email_send(request):
-    if request.POST:
-        if all(attr in request.POST for attr in ('email-from', 'email-subject', 'email-content')):
-            from django.core.mail import send_mail
-            send_mail(request.POST['email-subject'], request.POST['email-content'], request.POST['email-from'], ['abdrabo.mahmoud@gmail.com'], fail_silently=False)
-            return render_to_response('contact.html', {'success': "email sent"}, RequestContext(request))
-        else:
-            return render_to_response('contact.html', {'error': "email Not sent, please try again later"}, RequestContext(request))
 
 
 def logged_in_user(request):

@@ -9,6 +9,7 @@
         <ul class='nav nav-list'>
             {% for u in users %}
                 <li>
+                    <img src="" alt="" style="background-color: #{{u.color}}; "/>
                     <a href="{% url 'show_message' u.username %}">{{u.username}}</a>
                 </li>
             {% endfor %}
