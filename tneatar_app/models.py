@@ -16,7 +16,7 @@ class User(models.Model):
         return (rsa.PublicKey(2,3).load_pkcs1(keypair.public_key), rsa.PrivateKey(1, 2, 3, 4, 5, 6, 7, 8).load_pkcs1(keypair.private_key))
 
     def get_message_users(self):
-        all_users = [m.sender for m in DirectMessage.objects.filter(recipient=self)] + [m.recipient for m in DirectMessage.objects.filter(sender=self)]
+        all_users = [m.sender for m in DirectMessage.objects.filter(recipient=self)]
         r = []
         r = [u for u in all_users if u not in r]
         return r

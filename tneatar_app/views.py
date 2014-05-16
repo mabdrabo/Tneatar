@@ -210,6 +210,7 @@ def send_message(request):
                 encryp_tneata = encryp_tneata.encode('Base64')
                 print encryp_tneata
                 dmsg = DirectMessage.objects.create(sender=user, recipient=recipient,  content=encryp_tneata)
+                return dashboard(request, username=recipient.username, dic={'success':'message sent!'})
             except User.DoesNotExist:
                 return render_to_response('master.html', {'error': 'user not found'}, RequestContext(request))
         return render_to_response('master.html', {'error': 'error'}, RequestContext(request))

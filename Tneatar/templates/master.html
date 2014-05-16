@@ -92,6 +92,9 @@
                             <p>{{t.content|safe|urlize}}</p>
                             {% ifnotequal request.session.username t.tneata.user.username %}
                             <a href="{% url 'retneat' t.tneata.pk %}">retneat</a>
+                            {% if t.tneata.retneat_from %}
+                                <span>retneated from {{t.tneata.retneat_from.username}}</span>
+                            {% endif %}
                             {% endifnotequal %}
                         </div>
                     {% endfor %}
